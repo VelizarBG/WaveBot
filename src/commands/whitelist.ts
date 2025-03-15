@@ -4,7 +4,12 @@ import { KoalaEmbedBuilder } from '../classes/KoalaEmbedBuilder';
 import { config, ServerChoice } from '../config';
 import { getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
-import { getWhitelist, runRconCommand } from '../util/rcon';
+import { getWhitelist } from '../util/rcon';
+import { initORM } from "../index";
+import { Operation, WhitelistTask } from "../role-whitelist/entities/whitelist-task.entity";
+import { handleWhitelistTask } from "../role-whitelist/handlers/whitelist-handler";
+import { OperatorTask } from "../role-whitelist/entities/operator-task.entity";
+import { handleOperatorTask } from "../role-whitelist/handlers/operator-handler";
 
 export default new Command({
   name: 'whitelist',
@@ -103,50 +108,55 @@ export default new Command({
 
         const servers = Object.keys(config.mcConfig);
 
-        const whitelistCheck: [string, string][] = [];
-        const opCheck: [string, string][] = [];
-
+        const db = await initORM();
+        let whitelistServers = 0;
+        let opServers = 0;
+        let whitelistSuccesses = 0;
+        let opSuccesses = 0;
         for await (const server of servers) {
-          const { host, rconPort, rconPasswd } =
+          whitelistServers++;
+          const { host, rconPort } =
             config.mcConfig[server as ServerChoice];
 
-          const whitelistCommand = `whitelist ${subcommand} ${ign}`;
+          const storedServer = await db.server.findOne(
+            { host: { $eq: host }, rconPort: { $eq: rconPort } });
 
-          const whitelist = await runRconCommand(
-            host,
-            rconPort,
-            rconPasswd,
-            whitelistCommand,
+          if (!storedServer) {
+            continue;
+          }
+
+          const whitelistTask = new WhitelistTask(ign, subcommand === 'add'
+            ? Operation.ADD
+            : Operation.REMOVE, storedServer
           );
-
-          whitelistCheck.push([server, whitelist]);
+          if (await handleWhitelistTask(whitelistTask, db)) {
+            whitelistSuccesses += 1;
+          }
 
           if (config.mcConfig[server as ServerChoice].operator) {
-            const action = subcommand === 'add' ? 'op' : 'deop';
-            const opCommand = `${action} ${ign}`;
+            opServers++;
 
-            const op = await runRconCommand(
-              host,
-              rconPort,
-              rconPasswd,
-              opCommand,
+            const operatorTask = new OperatorTask(ign, subcommand === 'add'
+              ? Operation.ADD
+              : Operation.REMOVE, storedServer
             );
-
-            opCheck.push([server, op]);
+            if (await handleOperatorTask(operatorTask, db)) {
+              opSuccesses += 1;
+            }
           }
         }
         const successMessage =
           subcommand === 'add'
             ? `Successfully added ${inlineCode(ign)} to the whitelist on ${
-                whitelistCheck.length
-              } servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
-                opCheck.length
-              } servers.`
+                whitelistSuccesses
+              }/${whitelistServers} servers.\nSuccessfully made ${inlineCode(ign)} an operator on ${
+                opSuccesses
+              }/${opServers} servers.`
             : `Successfully removed ${inlineCode(ign)} from the whitelist on ${
-                whitelistCheck.length
-              } servers.\nSuccessfully removed ${inlineCode(
+                whitelistSuccesses
+              }/${whitelistServers} servers.\nSuccessfully removed ${inlineCode(
                 ign,
-              )} as an operator on ${opCheck.length} servers.`;
+              )} as an operator on ${opSuccesses}/${opServers} servers.`;
 
         return interaction.editReply(successMessage);
       }
