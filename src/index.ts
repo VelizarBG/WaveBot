@@ -45,9 +45,9 @@ export interface Services {
   operatorTask: EntityRepository<OperatorTask>;
 }
 
-let ormCache: Services;
+let ormCache: MikroORM;
 
-export async function initORM(options?: Options): Promise<Services> {
+export async function initORM(options?: Options): Promise<MikroORM> {
   if (ormCache) {
     return ormCache;
   }
@@ -58,15 +58,25 @@ export async function initORM(options?: Options): Promise<Services> {
     ...options,
   });
 
+  await orm.migrator.up();
+
   // save to cache before returning
-  return ormCache = {
+  return ormCache = orm;
+}
+
+export async function getForkedServices(): Promise<Services> {
+  const orm = await initORM();
+
+  const em = orm.em.fork();
+
+  return {
     orm,
-    em: orm.em,
-    user: orm.em.getRepository(User),
-    role: orm.em.getRepository(Role),
-    server: orm.em.getRepository(MinecraftServer),
-    whitelistTask: orm.em.getRepository(WhitelistTask),
-    operatorTask: orm.em.getRepository(OperatorTask),
+    em: em,
+    user: em.getRepository(User),
+    role: em.getRepository(Role),
+    server: em.getRepository(MinecraftServer),
+    whitelistTask: em.getRepository(WhitelistTask),
+    operatorTask: em.getRepository(OperatorTask),
   };
 }
 

@@ -1,5 +1,5 @@
 import { inlineCode, Snowflake } from "discord.js";
-import { client, initORM, Services } from "../../index";
+import { client, getForkedServices, Services } from "../../index";
 import { Role } from "../entities/role.entity";
 import { User } from "../entities/user.entity";
 import { MinecraftServer } from "../entities/minecraft-server.entity";
@@ -10,7 +10,8 @@ import { handleOperatorTask } from "./operator-handler";
 import { OperatorTask } from "../entities/operator-task.entity";
 
 export async function diffRolesOnInit() {
-  const db = await initORM();
+  const db = await getForkedServices();
+
   const roles = await db.role.findAll();
   const guild = await client.guilds.fetch(config.bot.guildID);
 
@@ -45,16 +46,14 @@ export async function diffRolesOnInit() {
   }
 
   for (const [userId, [oldRoles, newRoles]] of roleDiffMap) {
-    await handleUserRoleChange(userId, oldRoles, newRoles);
+    await handleUserRoleChange(userId, oldRoles, newRoles, db);
   }
-}
-
-export async function handleUserRoleChange(userId: Snowflake, oldRoles: Iterable<Snowflake>, newRoles: Iterable<Snowflake>): Promise<string> {
-  const db = await initORM();
-
-  const feedback = await handleUserRoleChangeInner(userId, new Set(oldRoles), new Set(newRoles), db);
 
   await db.em.flush();
+}
+
+export async function handleUserRoleChange(userId: Snowflake, oldRoles: Iterable<Snowflake>, newRoles: Iterable<Snowflake>, db: Services): Promise<string> {
+  const feedback = await handleUserRoleChangeInner(userId, new Set(oldRoles), new Set(newRoles), db);
 
   /*client.guilds.fetch(config.bot.guildID)
     .then(guild => getTextChannelFromID(guild, 'modLog'))
@@ -104,8 +103,7 @@ async function handleUserRoleChangeInner(userId: Snowflake, oldRoles: Set<Snowfl
   let user = await db.user.findOne(userId);
 
   if (!user) {
-    user = new User(userId);
-    db.user.create(user);
+    user = db.user.create(new User(userId));
   }
 
   for (const role of rolesToRemove) {
@@ -229,7 +227,7 @@ export class WhitelistOperatorFeedback implements WhitelistFeedback, OperatorFee
 
     if (this.whitelistFeedback.add.total > 0) {
       message += `Successfully added ${ign} to the whitelist on ${
-      this.whitelistFeedback.add.successful}/${this.whitelistFeedback.add.total} servers.`;
+        this.whitelistFeedback.add.successful}/${this.whitelistFeedback.add.total} servers.`;
     }
 
     if (this.whitelistFeedback.remove.total > 0) {

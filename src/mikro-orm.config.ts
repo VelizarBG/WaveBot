@@ -4,7 +4,6 @@ import {SqlHighlighter} from '@mikro-orm/sql-highlighter';
 const options = {} as Options;
 
 export default defineConfig({
-  allowGlobalContext: true,
   // for simplicity, we use the SQLite database, as it's available pretty much everywhere
   dbName: 'wavebot.db',
   // folder based discovery setup, using common filename suffix

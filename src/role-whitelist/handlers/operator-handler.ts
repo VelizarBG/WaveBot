@@ -1,5 +1,5 @@
 import { Operation } from "./operation";
-import { initORM, Services } from "../../index";
+import { getForkedServices, Services } from "../../index";
 import { runRconCommand } from "../../util/rcon";
 import { setTimeout } from "timers/promises";
 import { OperatorTask } from "../entities/operator-task.entity";
@@ -13,7 +13,7 @@ export async function handleOperatorTask(task: OperatorTask, db: Services): Prom
 }
 
 export async function runScheduledTasks(): Promise<string> {
-  const db = await initORM();
+  const db = await getForkedServices();
 
   const tasks = await db.operatorTask.findAll();
 
@@ -69,6 +69,9 @@ async function executeOperatorTask(task: OperatorTask): Promise<boolean> {
 
     if (successPattern.test(feedback)) {
       return true;
+    } else {
+      console.log(`[Whitelist Manager] Could not make ${
+        task.ign} an operator (${attemptsLeft} attempts left): ${feedback}`);
     }
 
     await setTimeout(1000);

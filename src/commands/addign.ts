@@ -1,11 +1,8 @@
-import {
-  ApplicationCommandOptionType,
-  inlineCode,
-} from 'discord.js';
+import { ApplicationCommandOptionType, inlineCode, } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { handleInteractionError } from '../util/loggers';
 import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
-import { initORM } from "../index";
+import { getForkedServices } from "../index";
 
 export default new Command({
   name: 'addign',
@@ -36,7 +33,7 @@ export default new Command({
     }
 
     try {
-      const db = await initORM();
+      const db = await getForkedServices();
 
       if (await db.user.count({ ign: { $eq: ign } }) > 0) {
         return interaction.editReply("This IGN is already used by someone else!");
@@ -53,7 +50,10 @@ export default new Command({
 
       interaction.editReply(`Trying to whitelist ${inlineCode(ign)}...`).then();
 
-      const feedback = await handleUserRoleChange(interaction.member.id, [], interaction.member.roles.valueOf().keys());
+      const feedback = await handleUserRoleChange(interaction.member.id, [], interaction.member.roles.valueOf().keys(), db);
+
+      await db.em.flush();
+
       return interaction.editReply(feedback);
     } catch (err) {
       return handleInteractionError({

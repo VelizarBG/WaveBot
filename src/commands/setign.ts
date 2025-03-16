@@ -1,11 +1,8 @@
-import {
-  ApplicationCommandOptionType,
-  inlineCode,
-} from 'discord.js';
+import { ApplicationCommandOptionType, inlineCode, } from 'discord.js';
 import { Command } from 'djs-handlers';
 import { handleInteractionError } from '../util/loggers';
 import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
-import { initORM } from "../index";
+import { getForkedServices } from "../index";
 
 export default new Command({
   name: 'setign',
@@ -43,7 +40,7 @@ export default new Command({
     }
 
     try {
-      const db = await initORM();
+      const db = await getForkedServices();
 
       if (await db.user.count({ ign: { $eq: ign } }) > 0) {
         return interaction.editReply("This IGN is already used by someone else!");
@@ -60,14 +57,16 @@ export default new Command({
       if (user.ign) {
         interaction.editReply(`Trying to remove ${inlineCode(user.ign)}...`).then();
 
-        removeFeedback = await handleUserRoleChange(user.id, roles, []);
+        removeFeedback = await handleUserRoleChange(user.id, roles, [], db);
       }
 
       user.ign = ign;
 
       interaction.editReply(`Trying to add ${inlineCode(ign)}...`).then();
 
-      const addFeedback = await handleUserRoleChange(user.id, [], roles);
+      const addFeedback = await handleUserRoleChange(user.id, [], roles, db);
+
+      await db.em.flush();
 
       return interaction.editReply(`Successfully set the IGN of ${
         inlineCode(discordUser.username)} to ${inlineCode(ign)}!\n\n${

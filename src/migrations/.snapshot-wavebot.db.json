@@ -1,0 +1,626 @@
+{
+  "namespaces": [],
+  "tables": [
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 200,
+          "mappedType": "text"
+        },
+        "host": {
+          "name": "host",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 15,
+          "mappedType": "text"
+        },
+        "port": {
+          "name": "port",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "rcon_port": {
+          "name": "rcon_port",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "rcon_password": {
+          "name": "rcon_password",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 500,
+          "mappedType": "text"
+        }
+      },
+      "name": "minecraft_servers",
+      "indexes": [
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "ign": {
+          "name": "ign",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 16,
+          "mappedType": "text"
+        },
+        "operation": {
+          "name": "operation",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "enumItems": [
+            "add",
+            "remove"
+          ],
+          "mappedType": "enum"
+        },
+        "server_id": {
+          "name": "server_id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "default": "0",
+          "mappedType": "integer"
+        }
+      },
+      "name": "operator_tasks",
+      "indexes": [
+        {
+          "columnNames": [
+            "server_id"
+          ],
+          "composite": false,
+          "keyName": "operator_tasks_server_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "operator_tasks_server_id_foreign": {
+          "constraintName": "operator_tasks_server_id_foreign",
+          "columnNames": [
+            "server_id"
+          ],
+          "localTableName": "operator_tasks",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "minecraft_servers",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        }
+      },
+      "name": "roles",
+      "indexes": [
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "role_id": {
+          "name": "role_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        },
+        "minecraft_server_id": {
+          "name": "minecraft_server_id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        }
+      },
+      "name": "roles_operator_servers",
+      "indexes": [
+        {
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "keyName": "roles_operator_servers_role_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "minecraft_server_id"
+          ],
+          "composite": false,
+          "keyName": "roles_operator_servers_minecraft_server_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "role_id",
+            "minecraft_server_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "roles_operator_servers_role_id_foreign": {
+          "constraintName": "roles_operator_servers_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "roles_operator_servers",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "roles",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "roles_operator_servers_minecraft_server_id_foreign": {
+          "constraintName": "roles_operator_servers_minecraft_server_id_foreign",
+          "columnNames": [
+            "minecraft_server_id"
+          ],
+          "localTableName": "roles_operator_servers",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "minecraft_servers",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "role_id": {
+          "name": "role_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        },
+        "minecraft_server_id": {
+          "name": "minecraft_server_id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        }
+      },
+      "name": "roles_whitelisted_servers",
+      "indexes": [
+        {
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "keyName": "roles_whitelisted_servers_role_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "minecraft_server_id"
+          ],
+          "composite": false,
+          "keyName": "roles_whitelisted_servers_minecraft_server_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "role_id",
+            "minecraft_server_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "roles_whitelisted_servers_role_id_foreign": {
+          "constraintName": "roles_whitelisted_servers_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "roles_whitelisted_servers",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "roles",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "roles_whitelisted_servers_minecraft_server_id_foreign": {
+          "constraintName": "roles_whitelisted_servers_minecraft_server_id_foreign",
+          "columnNames": [
+            "minecraft_server_id"
+          ],
+          "localTableName": "roles_whitelisted_servers",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "minecraft_servers",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        },
+        "ign": {
+          "name": "ign",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 16,
+          "mappedType": "text"
+        }
+      },
+      "name": "users",
+      "indexes": [
+        {
+          "columnNames": [
+            "ign"
+          ],
+          "composite": false,
+          "keyName": "users_ign_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "role_id": {
+          "name": "role_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "text"
+        }
+      },
+      "name": "roles_users",
+      "indexes": [
+        {
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "keyName": "roles_users_role_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "user_id"
+          ],
+          "composite": false,
+          "keyName": "roles_users_user_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "role_id",
+            "user_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "roles_users_role_id_foreign": {
+          "constraintName": "roles_users_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "roles_users",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "roles",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "roles_users_user_id_foreign": {
+          "constraintName": "roles_users_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "roles_users",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "users",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "ign": {
+          "name": "ign",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 16,
+          "mappedType": "text"
+        },
+        "operation": {
+          "name": "operation",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "enumItems": [
+            "add",
+            "remove"
+          ],
+          "mappedType": "enum"
+        },
+        "server_id": {
+          "name": "server_id",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "default": "0",
+          "mappedType": "integer"
+        }
+      },
+      "name": "whitelist_tasks",
+      "indexes": [
+        {
+          "columnNames": [
+            "server_id"
+          ],
+          "composite": false,
+          "keyName": "whitelist_tasks_server_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "primary",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "whitelist_tasks_server_id_foreign": {
+          "constraintName": "whitelist_tasks_server_id_foreign",
+          "columnNames": [
+            "server_id"
+          ],
+          "localTableName": "whitelist_tasks",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "minecraft_servers",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    }
+  ],
+  "nativeEnums": {}
+}

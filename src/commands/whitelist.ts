@@ -5,7 +5,7 @@ import { config, ServerChoice } from '../config';
 import { getServerChoices } from '../util/helpers';
 import { handleInteractionError } from '../util/loggers';
 import { getWhitelist } from '../util/rcon';
-import { initORM } from "../index";
+import { getForkedServices } from "../index";
 import { Operation, WhitelistTask } from "../role-whitelist/entities/whitelist-task.entity";
 import { handleWhitelistTask } from "../role-whitelist/handlers/whitelist-handler";
 import { OperatorTask } from "../role-whitelist/entities/operator-task.entity";
@@ -108,7 +108,8 @@ export default new Command({
 
         const servers = Object.keys(config.mcConfig);
 
-        const db = await initORM();
+        const db = await getForkedServices();
+
         let whitelistServers = 0;
         let opServers = 0;
         let whitelistSuccesses = 0;
@@ -145,6 +146,9 @@ export default new Command({
             }
           }
         }
+
+        await db.em.flush();
+
         const successMessage =
           subcommand === 'add'
             ? `Successfully added ${inlineCode(ign)} to the whitelist on ${

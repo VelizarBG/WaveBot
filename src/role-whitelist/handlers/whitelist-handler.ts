@@ -1,6 +1,6 @@
 import { Operation } from "./operation";
 import { WhitelistTask } from "../entities/whitelist-task.entity";
-import { initORM, Services } from "../../index";
+import { getForkedServices, Services } from "../../index";
 import { runRconCommand } from "../../util/rcon";
 import { setTimeout } from "timers/promises";
 
@@ -13,7 +13,7 @@ export async function handleWhitelistTask(task: WhitelistTask, db: Services): Pr
 }
 
 export async function runScheduledTasks(): Promise<string> {
-  const db = await initORM();
+  const db = await getForkedServices();
 
   const tasks = await db.whitelistTask.findAll();
 
@@ -30,7 +30,7 @@ export async function runScheduledTasks(): Promise<string> {
     feedback = `Successfully executed ${successfulTasks} out of ${tasks.length} scheduled whitelist tasks!`;
     console.log(feedback)
   } else {
-    feedback = 'There were no scheduled whitelist tasks.'
+    feedback = 'There were no scheduled whitelist tasks.';
   }
 
   await db.em.flush();
@@ -65,13 +65,13 @@ async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {
       server.rconPort,
       server.rconPassword,
       whitelistCommand,
-    ).catch(err => {
-      console.error("Error white executing whitelist task: ", err);
-      return "";
-    });
+    );
 
     if (successPattern.test(feedback)) {
       return true;
+    } else {
+      console.log(`[Whitelist Manager] Could not whitelist ${
+        task.ign} (${attemptsLeft} attempts left): ${feedback}`);
     }
 
     await setTimeout(1000);

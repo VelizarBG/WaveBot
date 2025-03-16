@@ -6,6 +6,9 @@ export class MinecraftServer {
   @PrimaryKey({ autoincrement: true })
   id!: number;
 
+  @Property({ length: 200 })
+  name: string;
+
   @Property({ length: 15 })
   host: string;
 
@@ -24,8 +27,9 @@ export class MinecraftServer {
   @ManyToMany({ entity: () => Role, mappedBy: "operatorServers", eager: false })
   operatorRoles = new Collection<Role>(this);
 
-  constructor(host: string, port: number, rconPort: number, rconPassword: string,
+  constructor(name: string, host: string, port: number, rconPort: number, rconPassword: string,
               whitelistedRoles: Iterable<Role>, operatorRoles: Iterable<Role>) {
+    this.name = name;
     this.host = host;
     this.port = port;
     this.rconPort = rconPort;
