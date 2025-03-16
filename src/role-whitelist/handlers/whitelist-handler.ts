@@ -12,7 +12,7 @@ export async function handleWhitelistTask(task: WhitelistTask, db: Services): Pr
   return true;
 }
 
-export async function runScheduledTasks() {
+export async function runScheduledTasks(): Promise<string> {
   const db = await initORM();
 
   const tasks = await db.whitelistTask.findAll();
@@ -25,11 +25,17 @@ export async function runScheduledTasks() {
     }
   }
 
+  let feedback;
   if (tasks.length > 0) {
-    console.log(`Successfully executed ${successfulTasks} out of ${tasks.length} scheduled whitelist tasks!`)
+    feedback = `Successfully executed ${successfulTasks} out of ${tasks.length} scheduled whitelist tasks!`;
+    console.log(feedback)
+  } else {
+    feedback = 'There were no scheduled whitelist tasks.'
   }
 
   await db.em.flush();
+
+  return feedback;
 }
 
 async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {

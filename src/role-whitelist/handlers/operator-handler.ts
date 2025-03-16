@@ -12,7 +12,7 @@ export async function handleOperatorTask(task: OperatorTask, db: Services): Prom
   return true;
 }
 
-export async function runScheduledTasks() {
+export async function runScheduledTasks(): Promise<string> {
   const db = await initORM();
 
   const tasks = await db.operatorTask.findAll();
@@ -25,11 +25,17 @@ export async function runScheduledTasks() {
     }
   }
 
+  let feedback;
   if (tasks.length > 0) {
-    console.log(`Successfully executed ${successfulTasks} out of ${tasks.length} scheduled operator tasks!`)
+    feedback = `Successfully executed ${successfulTasks} out of ${tasks.length} scheduled operator tasks!`;
+    console.log(feedback)
+  } else {
+    feedback = 'There were no scheduled operator tasks.';
   }
 
   await db.em.flush();
+
+  return feedback;
 }
 
 async function executeOperatorTask(task: OperatorTask): Promise<boolean> {

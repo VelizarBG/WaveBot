@@ -239,6 +239,7 @@ export class WhitelistOperatorFeedback implements WhitelistFeedback, OperatorFee
     }
 
     if (this.operatorFeedback.add.total > 0) {
+      if (message.length > 0) message += '\n';
       message += `Successfully made ${ign} an operator on ${
         this.operatorFeedback.add.successful}/${this.operatorFeedback.add.total} servers.`;
     }
