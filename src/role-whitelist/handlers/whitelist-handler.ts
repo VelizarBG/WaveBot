@@ -70,8 +70,8 @@ async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {
     if (successPattern.test(feedback)) {
       return true;
     } else {
-      console.log(`[Whitelist Manager] Could not whitelist ${
-        task.ign} (${attemptsLeft} attempts left): ${feedback}`);
+      console.log(`[Whitelist Manager] Could not ${task.operation} whitelist for ${
+        task.ign} on ${server.name} (${attemptsLeft} attempts left): ${feedback}`);
     }
 
     await setTimeout(1000);

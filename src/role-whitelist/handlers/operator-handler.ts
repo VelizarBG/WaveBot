@@ -70,8 +70,8 @@ async function executeOperatorTask(task: OperatorTask): Promise<boolean> {
     if (successPattern.test(feedback)) {
       return true;
     } else {
-      console.log(`[Whitelist Manager] Could not make ${
-        task.ign} an operator (${attemptsLeft} attempts left): ${feedback}`);
+      console.log(`[Whitelist Manager] Could not ${task.operation} operator for ${
+        task.ign} on ${server.name} (${attemptsLeft} attempts left): ${feedback}`);
     }
 
     await setTimeout(1000);
