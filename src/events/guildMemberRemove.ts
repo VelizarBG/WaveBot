@@ -4,10 +4,20 @@ import { JoinLeaveEmbedBuilder } from '../classes/JoinLeaveEmbedBuilder';
 import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
 import { getJoinedAtComponent } from '../util/helpers';
 import { getTextChannelFromID, handleEventError } from '../util/loggers';
+import { getForkedServices } from "../index";
+import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
 
 export default new Event('guildMemberRemove', async (member) => {
   try {
     console.log(`${member.user.username} left ${member.guild.name}`);
+
+    const db = await getForkedServices();
+
+    const oldRoles = member.roles.valueOf().keys();
+    const newRoles: string[] = [];
+    await handleUserRoleChange(member.id, oldRoles, newRoles, db);
+
+    await db.em.flush();
 
     const joinedAt = getJoinedAtComponent(member);
     const memberLog = await getTextChannelFromID(member.guild, 'memberLog');
