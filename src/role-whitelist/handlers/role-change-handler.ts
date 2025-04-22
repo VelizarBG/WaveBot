@@ -118,16 +118,18 @@ async function handleUserRoleChangeInner(userId: Snowflake, oldRoles: Set<Snowfl
     return `User ${inlineCode(user.id)} does not have an IGN.`;
   }
 
-  await db.role.populate([...rolesToAdd, ...rolesToRemove], ['whitelistedServers', 'operatorServers']);
+  const currentRoles = user.roles.getItems();
 
-  const whitelistFeedback = await handleWhitelist(rolesToAdd, rolesToRemove, user.ign, db);
+  await db.role.populate([...currentRoles, ...rolesToRemove], ['whitelistedServers', 'operatorServers']);
 
-  const operatorFeedback = await handleOperator(rolesToAdd, rolesToRemove, user.ign, db);
+  const whitelistFeedback = await handleWhitelist(rolesToAdd, rolesToRemove, currentRoles, user.ign, db);
+
+  const operatorFeedback = await handleOperator(rolesToAdd, rolesToRemove, currentRoles, user.ign, db);
 
   return new WhitelistOperatorFeedback(whitelistFeedback, operatorFeedback).createFeedbackMessage(user.ign);
 }
 
-async function handleWhitelist(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, ign: string, db: Services): Promise<WhitelistFeedback> {
+async function handleWhitelist(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, currentRoles: Array<Role>, ign: string, db: Services): Promise<WhitelistFeedback> {
   const serversToWhitelist = new Set<MinecraftServer>();
   for (const role of rolesToAdd) {
     for (const server of role.whitelistedServers) {
@@ -135,10 +137,12 @@ async function handleWhitelist(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, 
     }
   }
 
+  const currentServers = new Set<MinecraftServer>(currentRoles
+    .flatMap(role => role.whitelistedServers.getItems()));
   const serversToUnwhitelist = new Set<MinecraftServer>();
   for (const role of rolesToRemove) {
     for (const server of role.whitelistedServers) {
-      if (!serversToWhitelist.has(server)) {
+      if (!currentServers.has(server)) {
         serversToUnwhitelist.add(server);
       }
     }
@@ -172,7 +176,7 @@ async function handleWhitelist(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, 
   return feedback;
 }
 
-async function handleOperator(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, ign: string, db: Services): Promise<OperatorFeedback> {
+async function handleOperator(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, currentRoles: Array<Role>, ign: string, db: Services): Promise<OperatorFeedback> {
   const serversToOp = new Set<MinecraftServer>();
   for (const role of rolesToAdd) {
     for (const server of role.operatorServers) {
@@ -180,10 +184,12 @@ async function handleOperator(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, i
     }
   }
 
+  const currentServers = new Set<MinecraftServer>(currentRoles
+    .flatMap(role => role.operatorServers.getItems()));
   const serversToDeop = new Set<MinecraftServer>();
   for (const role of rolesToRemove) {
     for (const server of role.operatorServers) {
-      if (!serversToOp.has(server)) {
+      if (!currentServers.has(server)) {
         serversToDeop.add(server);
       }
     }
