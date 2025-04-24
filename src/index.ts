@@ -12,6 +12,7 @@ import { runScheduledTasks as runWhitelistTasks } from "./role-whitelist/handler
 import { runScheduledTasks as runOperatorTasks } from "./role-whitelist/handlers/operator-handler";
 import { diffRolesOnInit } from "./role-whitelist/handlers/role-change-handler";
 import { OperatorTask } from "./role-whitelist/entities/operator-task.entity";
+import { handleError } from "./util/loggers";
 
 export const client = new ExtendedClient({
   intents: [
@@ -81,8 +82,15 @@ export async function getForkedServices(): Promise<Services> {
 }
 
 const initRunScheduledTasksJob = () => new Cron('0 * * * *', async () => {
-  await runWhitelistTasks();
-  await runOperatorTasks();
+  const wrapRunTasks = async (runTasks: () => Promise<string>) => {
+    try {
+      await runTasks();
+    } catch (err) {
+      await handleError(err, "Error while running scheduled tasks!");
+    }
+  };
+  await wrapRunTasks(runWhitelistTasks);
+  await wrapRunTasks(runOperatorTasks);
 });
 
 const onInit = async () => {

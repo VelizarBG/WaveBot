@@ -5,11 +5,14 @@ import { setTimeout } from "timers/promises";
 import { OperatorTask } from "../entities/operator-task.entity";
 
 export async function handleOperatorTask(task: OperatorTask, db: Services): Promise<boolean> {
-  if (!await executeOperatorTask(task)) {
-    db.operatorTask.create(task);
-    return false;
-  }
-  return true;
+  return executeOperatorTask(task).then(isSuccessful => {
+    if (!isSuccessful) {
+      db.operatorTask.create(task);
+      return false;
+    } else {
+      return true;
+    }
+  });
 }
 
 export async function runScheduledTasks(): Promise<string> {
@@ -57,25 +60,28 @@ async function executeOperatorTask(task: OperatorTask): Promise<boolean> {
   const operatorCommand = `${command} ${task.ign}`;
 
   let attemptsLeft = 5;
-  while (attemptsLeft > 0) {
-    attemptsLeft--;
 
-    const feedback = await runRconCommand(
-      server.host,
-      server.rconPort,
-      server.rconPassword,
-      operatorCommand,
-    );
-
+  const runCommand = (): Promise<boolean> => runRconCommand(
+    server.host,
+    server.rconPort,
+    server.rconPassword,
+    operatorCommand,
+  ).then(feedback => {
     if (successPattern.test(feedback)) {
       return true;
     } else {
+      attemptsLeft--;
       console.log(`[Whitelist Manager] Could not ${task.operation} operator for ${
         task.ign} on ${server.name} (${attemptsLeft} attempts left): ${feedback}`);
+
+      if (attemptsLeft > 0) {
+        setTimeout(1000);
+        return runCommand();
+      } else {
+        return false;
+      }
     }
+  });
 
-    await setTimeout(1000);
-  }
-
-  return false;
+  return runCommand();
 }

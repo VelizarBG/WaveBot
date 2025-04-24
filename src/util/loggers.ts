@@ -3,6 +3,7 @@ import { EmbedBuilder } from 'discord.js';
 import type { IExtendedInteraction } from 'djs-handlers';
 import { ChannelConfig, config } from '../config';
 import getErrorMessage from './errors';
+import { client } from "../index";
 
 type InteractionErrorOptions = {
   interaction: IExtendedInteraction;
@@ -81,6 +82,27 @@ export async function handleEventError(options: EventErrorOptions) {
   });
 
   botLogChannel.send({ embeds: [eventErrorEmbed] });
+}
+
+export async function handleError(err: unknown, message: string) {
+  const botLogChannel = await getTextChannelFromID(await client.guilds.fetch(config.bot.guildID), 'botLog');
+
+  const errorMessage = getErrorMessage(err);
+  console.error(errorMessage);
+
+  const errorEmbed = new EmbedBuilder({
+    author: {
+      name: client.user?.username || "null",
+      iconURL: client.user?.displayAvatarURL(),
+    },
+    description: `${message}`,
+    footer: {
+      text: 'Error Logging',
+    },
+    timestamp: Date.now(),
+  });
+
+  botLogChannel.send({ embeds: [errorEmbed] });
 }
 
 export async function getTextChannelFromID(

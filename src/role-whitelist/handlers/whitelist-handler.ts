@@ -5,11 +5,14 @@ import { runRconCommand } from "../../util/rcon";
 import { setTimeout } from "timers/promises";
 
 export async function handleWhitelistTask(task: WhitelistTask, db: Services): Promise<boolean> {
-  if (!await executeWhitelistTask(task)) {
-    db.whitelistTask.create(task);
-    return false;
-  }
-  return true;
+  return executeWhitelistTask(task).then(isSuccessful => {
+    if (!isSuccessful) {
+      db.whitelistTask.create(task);
+      return false;
+    } else {
+      return true;
+    }
+  });
 }
 
 export async function runScheduledTasks(): Promise<string> {
@@ -57,25 +60,28 @@ async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {
   const whitelistCommand = `whitelist ${subcommand} ${task.ign}`;
 
   let attemptsLeft = 5;
-  while (attemptsLeft > 0) {
-    attemptsLeft--;
 
-    const feedback = await runRconCommand(
-      server.host,
-      server.rconPort,
-      server.rconPassword,
-      whitelistCommand,
-    );
-
+  const runCommand = (): Promise<boolean> => runRconCommand(
+    server.host,
+    server.rconPort,
+    server.rconPassword,
+    whitelistCommand,
+  ).then(feedback => {
     if (successPattern.test(feedback)) {
       return true;
     } else {
+      attemptsLeft--;
       console.log(`[Whitelist Manager] Could not ${task.operation} whitelist for ${
         task.ign} on ${server.name} (${attemptsLeft} attempts left): ${feedback}`);
+
+      if (attemptsLeft > 0) {
+        setTimeout(1000);
+        return runCommand();
+      } else {
+        return false;
+      }
     }
+  });
 
-    await setTimeout(1000);
-  }
-
-  return false;
+  return runCommand();
 }

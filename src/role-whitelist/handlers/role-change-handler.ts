@@ -122,9 +122,10 @@ async function handleUserRoleChangeInner(userId: Snowflake, oldRoles: Set<Snowfl
 
   await db.role.populate([...currentRoles, ...rolesToRemove], ['whitelistedServers', 'operatorServers']);
 
-  const whitelistFeedback = await handleWhitelist(rolesToAdd, rolesToRemove, currentRoles, user.ign, db);
-
-  const operatorFeedback = await handleOperator(rolesToAdd, rolesToRemove, currentRoles, user.ign, db);
+  const [whitelistFeedback, operatorFeedback] = await Promise.all([
+    handleWhitelist(rolesToAdd, rolesToRemove, currentRoles, user.ign, db),
+    handleOperator(rolesToAdd, rolesToRemove, currentRoles, user.ign, db)
+  ]);
 
   return new WhitelistOperatorFeedback(whitelistFeedback, operatorFeedback).createFeedbackMessage(user.ign);
 }
@@ -161,19 +162,34 @@ async function handleWhitelist(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, 
     }
   };
 
+  const addTasks: Promise<boolean>[] = [];
   for (const server of serversToWhitelist) {
-    if (await handleWhitelistTask(new WhitelistTask(ign, Operation.ADD, server), db)) {
-      feedback.whitelistFeedback.add.successful += 1;
-    }
+    addTasks.push(handleWhitelistTask(new WhitelistTask(ign, Operation.ADD, server), db));
   }
 
+  const removeTasks: Promise<boolean>[] = [];
   for (const server of serversToUnwhitelist) {
-    if (await handleWhitelistTask(new WhitelistTask(ign, Operation.REMOVE, server), db)) {
-      feedback.whitelistFeedback.remove.successful += 1;
-    }
+    removeTasks.push(handleWhitelistTask(new WhitelistTask(ign, Operation.REMOVE, server), db));
   }
 
-  return feedback;
+  return Promise.all([
+    Promise.all(addTasks).then(addResults => {
+      for (const isSuccessful of addResults) {
+        if (isSuccessful) {
+          feedback.whitelistFeedback.add.successful += 1;
+        }
+      }
+    }),
+    Promise.all(removeTasks).then(removeResults => {
+      for (const isSuccessful of removeResults) {
+        if (isSuccessful) {
+          feedback.whitelistFeedback.remove.successful += 1;
+        }
+      }
+    })
+  ]).then(() => {
+    return feedback;
+  });
 }
 
 async function handleOperator(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, currentRoles: Array<Role>, ign: string, db: Services): Promise<OperatorFeedback> {
@@ -208,19 +224,34 @@ async function handleOperator(rolesToAdd: Set<Role>, rolesToRemove: Set<Role>, c
     }
   };
 
+  const addTasks: Promise<boolean>[] = [];
   for (const server of serversToOp) {
-    if (await handleOperatorTask(new OperatorTask(ign, Operation.ADD, server), db)) {
-      feedback.operatorFeedback.add.successful += 1;
-    }
+    addTasks.push(handleOperatorTask(new OperatorTask(ign, Operation.ADD, server), db));
   }
 
+  const removeTasks: Promise<boolean>[] = [];
   for (const server of serversToDeop) {
-    if (await handleOperatorTask(new OperatorTask(ign, Operation.REMOVE, server), db)) {
-      feedback.operatorFeedback.remove.successful += 1;
-    }
+    removeTasks.push(handleOperatorTask(new OperatorTask(ign, Operation.REMOVE, server), db));
   }
 
-  return feedback;
+  return Promise.all([
+    Promise.all(addTasks).then(addResults => {
+      for (const isSuccessful of addResults) {
+        if (isSuccessful) {
+          feedback.operatorFeedback.add.successful += 1;
+        }
+      }
+    }),
+    Promise.all(removeTasks).then(removeResults => {
+      for (const isSuccessful of removeResults) {
+        if (isSuccessful) {
+          feedback.operatorFeedback.remove.successful += 1;
+        }
+      }
+    })
+  ]).then(() => {
+    return feedback;
+  });
 }
 
 export class WhitelistOperatorFeedback implements WhitelistFeedback, OperatorFeedback {
