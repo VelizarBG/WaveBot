@@ -15,7 +15,7 @@ export class WhitelistTask {
   @Enum(() => Operation)
   operation: Operation;
 
-  @ManyToOne()
+  @ManyToOne({ eager: true })
   server: MinecraftServer;
 
   @Property()
