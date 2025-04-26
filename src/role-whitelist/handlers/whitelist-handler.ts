@@ -20,13 +20,18 @@ export async function runScheduledTasks(): Promise<string> {
 
   const tasks = await db.whitelistTask.findAll();
 
+  const taskPromises: Promise<void>[] = [];
   let successfulTasks = 0;
   for (const task of tasks) {
-    if (await executeWhitelistTask(task)) {
-      db.em.remove(task);
-      successfulTasks += 1;
-    }
+    taskPromises.push(executeWhitelistTask(task).then(isSuccessful => {
+      if (isSuccessful) {
+        db.em.remove(task);
+        successfulTasks += 1;
+      }
+    }));
   }
+
+  await Promise.all(taskPromises);
 
   let feedback;
   if (tasks.length > 0) {

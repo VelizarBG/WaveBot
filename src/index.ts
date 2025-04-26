@@ -89,8 +89,7 @@ const initRunScheduledTasksJob = () => new Cron('0 * * * *', async () => {
       await handleError(err, "Error while running scheduled tasks!");
     }
   };
-  await wrapRunTasks(runWhitelistTasks);
-  await wrapRunTasks(runOperatorTasks);
+  await Promise.all([wrapRunTasks(runWhitelistTasks), wrapRunTasks(runOperatorTasks)]);
 });
 
 const onInit = async () => {

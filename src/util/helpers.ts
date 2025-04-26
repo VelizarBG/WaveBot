@@ -5,6 +5,7 @@ import {
   time,
 } from 'discord.js';
 import { config } from '../config';
+import axios from "axios";
 
 export function getServerChoices(): ApplicationCommandOptionChoiceData<string>[] {
   const choices = [];
@@ -43,4 +44,13 @@ export function getJoinedAtComponent(
         'R',
       )})`
     : '\u200b';
+}
+
+export async function doesPlayerExist(ign: string): Promise<boolean | null> {
+  try {
+    const { data } = await axios.get("https://api.mojang.com/users/profiles/minecraft/" + ign);
+    return !!data.id;
+  } catch (err) {
+    return axios.isAxiosError(err) && err.response && err.response.status == 404 ? false : null;
+  }
 }

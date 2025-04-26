@@ -14,11 +14,9 @@ export default new Command({
     }
 
     try {
-      interaction.editReply('Running whitelist tasks...').then();
-      const whitelistFeedback = await runWhitelistTasks();
+      interaction.editReply('Running scheduled tasks...').then();
 
-      interaction.editReply('Running operator tasks...').then();
-      const operatorFeedback = await runOperatorTasks();
+      const [whitelistFeedback, operatorFeedback] = await Promise.all([runWhitelistTasks(), runOperatorTasks()]);
 
       return interaction.editReply(whitelistFeedback + '\n' + operatorFeedback);
     } catch (err) {

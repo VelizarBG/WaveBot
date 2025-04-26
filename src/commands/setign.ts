@@ -3,6 +3,7 @@ import { Command } from 'djs-handlers';
 import { handleInteractionError } from '../util/loggers';
 import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
 import { getForkedServices } from "../index";
+import { doesPlayerExist } from "../util/helpers";
 
 export default new Command({
   name: 'setign',
@@ -37,6 +38,13 @@ export default new Command({
 
     if (ign.length > 16) {
       return interaction.editReply("The IGN can't be longer than 16 characters!");
+    }
+
+    switch (await doesPlayerExist(ign)) {
+      case null:
+        return interaction.editReply("Could not verify whether that player exists!");
+      case false:
+        return interaction.editReply("That player does not exist!");
     }
 
     try {
