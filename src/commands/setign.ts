@@ -3,7 +3,7 @@ import { Command } from 'djs-handlers';
 import { handleInteractionError } from '../util/loggers';
 import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
 import { getForkedServices } from "../index";
-import { doesPlayerExist } from "../util/helpers";
+import { getCanonicalIGN } from "../util/helpers";
 
 export default new Command({
   name: 'setign',
@@ -30,7 +30,7 @@ export default new Command({
     }
 
     const discordUser = args.getUser('user');
-    const ign = args.getString('ign');
+    let ign = args.getString('ign');
 
     if (!discordUser || !ign) {
       return interaction.editReply('Missing arguments for this command!');
@@ -40,10 +40,11 @@ export default new Command({
       return interaction.editReply("The IGN can't be longer than 16 characters!");
     }
 
-    switch (await doesPlayerExist(ign)) {
+    ign = await getCanonicalIGN(ign);
+    switch (ign) {
       case null:
         return interaction.editReply("Could not verify whether that player exists!");
-      case false:
+      case "":
         return interaction.editReply("That player does not exist!");
     }
 
@@ -51,7 +52,7 @@ export default new Command({
       const db = await getForkedServices();
 
       if (await db.user.count({ ign: { $eq: ign } }) > 0) {
-        return interaction.editReply("This IGN is already used by someone else!");
+        return interaction.editReply("This IGN is already used!");
       }
 
       const user = await db.user.findOne(discordUser.id);

@@ -46,11 +46,11 @@ export function getJoinedAtComponent(
     : '\u200b';
 }
 
-export async function doesPlayerExist(ign: string): Promise<boolean | null> {
+export async function getCanonicalIGN(ign: string): Promise<string | null> {
   try {
     const { data } = await axios.get("https://api.mojang.com/users/profiles/minecraft/" + ign);
-    return !!data.id;
+    return typeof data.name == "string" ? data.name : "";
   } catch (err) {
-    return axios.isAxiosError(err) && err.response && err.response.status == 404 ? false : null;
+    return axios.isAxiosError(err) && err.response && err.response.status == 404 ? "" : null;
   }
 }
