@@ -12,6 +12,10 @@ export async function handleWhitelistTask(task: WhitelistTask, db: Services): Pr
     } else {
       return true;
     }
+  }).catch(reason => {
+    db.whitelistTask.create(task);
+    console.log('[Whitelist Manager] Could not execute whitelist task: ' + reason);
+    return false;
   });
 }
 
@@ -28,6 +32,8 @@ export async function runScheduledTasks(): Promise<string> {
         db.em.remove(task);
         successfulTasks += 1;
       }
+    }).catch(reason => {
+      console.log('[Whitelist Manager] Could not execute whitelist task: ' + reason);
     }));
   }
 
