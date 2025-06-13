@@ -48,7 +48,7 @@ export function getJoinedAtComponent(
 
 export async function getCanonicalIGN(ign: string): Promise<string | null> {
   try {
-    const { data } = await axios.get("https://api.mojang.com/users/profiles/minecraft/" + ign);
+    const { data } = await axios.get("https://api.minecraftservices.com/minecraft/profile/lookup/name/" + ign);
     return typeof data.name == "string" ? data.name : "";
   } catch (err) {
     return axios.isAxiosError(err) && err.response && err.response.status == 404 ? "" : null;

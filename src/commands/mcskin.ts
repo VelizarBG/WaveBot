@@ -48,7 +48,7 @@ export default new Command({
 
     try {
       const uuidResponse = await axios.get(
-        `https://api.mojang.com/users/profiles/minecraft/${name}`,
+        `https://api.minecraftservices.com/minecraft/profile/lookup/name/${name}`,
       );
 
       if (uuidResponse.status !== 200) {
