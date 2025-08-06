@@ -39,12 +39,14 @@ export default new Command({
   ],
   execute: async ({ interaction, args }) => {
     try {
+      await interaction.deferReply();
+
       let question = args.getString('question');
       const answerType = args.getString('type');
       const answers = args.getString('answers');
 
       if (!question || !answerType) {
-        return interaction.reply(
+        return interaction.editReply(
           'Please specify a question and an answer type!',
         );
       }
@@ -56,9 +58,8 @@ export default new Command({
           title: question,
         });
 
-        const message = await interaction.reply({
+        const message = await interaction.editReply({
           embeds: [pollEmbed],
-          fetchReply: true,
         });
 
         const { frogYes, frogNo } = getEmojis(interaction.client);
@@ -67,7 +68,7 @@ export default new Command({
         return message.react(frogNo);
       } else {
         if (!answers) {
-          return interaction.reply('Please specify answers!');
+          return interaction.editReply('Please specify answers!');
         }
 
         const emojiArr = [
@@ -91,7 +92,7 @@ export default new Command({
         });
 
         if (fields.length > 10) {
-          return interaction.reply('You can only have 10 answers max!');
+          return interaction.editReply('You can only have 10 answers max!');
         }
 
         const pollEmbed = new KoalaEmbedBuilder(interaction.user, {
@@ -99,9 +100,8 @@ export default new Command({
           fields,
         });
 
-        const message = await interaction.reply({
+        const message = await interaction.editReply({
           embeds: [pollEmbed],
-          fetchReply: true,
         });
 
         for (let i = 0; i < fields.length; i++) {
