@@ -42,7 +42,7 @@ export async function runScheduledTasks(): Promise<string> {
   let feedback;
   if (tasks.length > 0) {
     feedback = `Successfully executed ${successfulTasks} out of ${tasks.length} scheduled whitelist tasks!`;
-    console.log(feedback)
+    console.log(feedback);
   } else {
     feedback = 'There were no scheduled whitelist tasks.';
   }
@@ -53,6 +53,16 @@ export async function runScheduledTasks(): Promise<string> {
 }
 
 async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(executeWhitelistTaskInner(task))
+    } catch (e: unknown) {
+      reject(e)
+    }
+  });
+}
+
+async function executeWhitelistTaskInner(task: WhitelistTask): Promise<boolean> {
   let subcommand: string;
   let successPattern: RegExp;
   if (task.operation === Operation.ADD) {

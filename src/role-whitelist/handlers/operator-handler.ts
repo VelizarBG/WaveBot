@@ -42,7 +42,7 @@ export async function runScheduledTasks(): Promise<string> {
   let feedback;
   if (tasks.length > 0) {
     feedback = `Successfully executed ${successfulTasks} out of ${tasks.length} scheduled operator tasks!`;
-    console.log(feedback)
+    console.log(feedback);
   } else {
     feedback = 'There were no scheduled operator tasks.';
   }
@@ -53,6 +53,16 @@ export async function runScheduledTasks(): Promise<string> {
 }
 
 async function executeOperatorTask(task: OperatorTask): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(executeOperatorTaskInner(task))
+    } catch (e: unknown) {
+      reject(e)
+    }
+  });
+}
+
+async function executeOperatorTaskInner(task: OperatorTask): Promise<boolean> {
   let command: string;
   let successPattern: RegExp;
   if (task.operation === Operation.ADD) {
