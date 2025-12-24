@@ -53,16 +53,6 @@ export async function runScheduledTasks(): Promise<string> {
 }
 
 async function executeWhitelistTask(task: WhitelistTask): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    try {
-      resolve(executeWhitelistTaskInner(task))
-    } catch (e: unknown) {
-      reject(e)
-    }
-  });
-}
-
-async function executeWhitelistTaskInner(task: WhitelistTask): Promise<boolean> {
   let subcommand: string;
   let successPattern: RegExp;
   if (task.operation === Operation.ADD) {

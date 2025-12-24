@@ -53,16 +53,6 @@ export async function runScheduledTasks(): Promise<string> {
 }
 
 async function executeOperatorTask(task: OperatorTask): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    try {
-      resolve(executeOperatorTaskInner(task))
-    } catch (e: unknown) {
-      reject(e)
-    }
-  });
-}
-
-async function executeOperatorTaskInner(task: OperatorTask): Promise<boolean> {
   let command: string;
   let successPattern: RegExp;
   if (task.operation === Operation.ADD) {
