@@ -12,7 +12,7 @@ export default new Event('interactionCreate', async (interaction) => {
 
   const command = client.commands.get(interaction.commandName);
 
-  const getChannelName = (channel: TextBasedChannel | null): string | void => {
+  const getChannelName = (channel: TextBasedChannel | null): string | null | void => {
     if (channel && 'name' in channel) {
       return channel.name;
     }

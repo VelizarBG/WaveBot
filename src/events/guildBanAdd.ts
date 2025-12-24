@@ -1,7 +1,9 @@
 import { AuditLogEvent } from 'discord.js';
 import { Event } from 'djs-handlers';
-import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
-import { getTextChannelFromID, handleEventError } from '../util/loggers';
+import { ModerationEmbedOptions } from '../classes/ModerationEmbedBuilder';
+import { handleEventError } from '../util/loggers';
+import { sendEmbedToModLogs } from "../util/helpers";
+
 export default new Event('guildBanAdd', async (guildBan) => {
   try {
     const ban = guildBan.partial ? await guildBan.fetch() : guildBan;
@@ -24,17 +26,16 @@ export default new Event('guildBanAdd', async (guildBan) => {
     }
 
     const executingMember = await ban.guild.members.fetch(executor.id);
-    const modLog = await getTextChannelFromID(ban.guild, 'modLog');
 
     if (target.id === ban.user.id) {
-      const banEmbed = new ModerationEmbedBuilder({
+      const banEmbedOptions: ModerationEmbedOptions = {
         target: ban.user,
         executor: executingMember,
         action: 'ban',
         reason: reason,
-      });
+      };
 
-      modLog.send({ embeds: [banEmbed] });
+      await sendEmbedToModLogs(banEmbedOptions, ban.guild);
     } else {
       throw new Error(
         'The IDs of the target in the AuditLog and the target from the Event did not match.',

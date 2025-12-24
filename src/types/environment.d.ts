@@ -12,6 +12,7 @@ declare global {
       CHANNEL_RESOURCES: string;
       CHANNEL_SERVERINFO: string;
       CHANNEL_TODO: string;
+      CHANNEL_MEMBER_MOD_LOG: string;
       ROLE_MEMBER: string;
       ROLE_ADMIN: string;
       EMOJI_KIWI: string;

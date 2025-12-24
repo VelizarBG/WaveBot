@@ -1,11 +1,26 @@
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMember,
-  PartialGuildMember,
-  time,
-} from 'discord.js';
+import { ApplicationCommandOptionChoiceData, Guild, GuildMember, PartialGuildMember, time, } from 'discord.js';
 import { config } from '../config';
 import axios from "axios";
+import { ModerationEmbedBuilder, ModerationEmbedOptions } from "../classes/ModerationEmbedBuilder";
+import { getTextChannelFromID } from "./loggers";
+
+export async function sendEmbedToModLogs(options: ModerationEmbedOptions, guild: Guild) {
+  options.isMemberModLog = false;
+  const modLog = await getTextChannelFromID(guild, 'modLog');
+  modLog.send({ embeds: [new ModerationEmbedBuilder(options)] });
+
+  options.isMemberModLog = true;
+  const memberModLog = await getTextChannelFromID(guild, 'memberModLog');
+  memberModLog.send({ embeds: [new ModerationEmbedBuilder(options)] });
+}
+
+export function getAsJsonIfObject(maybeObject: unknown): string {
+  if (typeof maybeObject === 'object') {
+    return JSON.stringify(maybeObject);
+  } else {
+    return maybeObject === undefined ? '' : maybeObject.toString();
+  }
+}
 
 export function getServerChoices(): ApplicationCommandOptionChoiceData<string>[] {
   const choices = [];

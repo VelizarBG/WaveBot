@@ -1,8 +1,8 @@
 import { AuditLogEvent, inlineCode, time, userMention } from 'discord.js';
 import { Event } from 'djs-handlers';
 import { JoinLeaveEmbedBuilder } from '../classes/JoinLeaveEmbedBuilder';
-import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
-import { getJoinedAtComponent } from '../util/helpers';
+import { ModerationEmbedOptions } from '../classes/ModerationEmbedBuilder';
+import { getJoinedAtComponent, sendEmbedToModLogs } from '../util/helpers';
 import { getTextChannelFromID, handleEventError } from '../util/loggers';
 import { getForkedServices } from "../index";
 import { handleUserRoleChange } from "../role-whitelist/handlers/role-change-handler";
@@ -55,16 +55,15 @@ export default new Event('guildMemberRemove', async (member) => {
       );
 
       const executingMember = await member.guild.members.fetch(executor.id);
-      const modLog = await getTextChannelFromID(member.guild, 'modLog');
 
-      const kickEmbed = new ModerationEmbedBuilder({
+      const kickEmbedOptions: ModerationEmbedOptions = {
         target: member.user,
         executor: executingMember,
         action: 'kick',
         reason: reason,
-      });
+      };
 
-      modLog.send({ embeds: [kickEmbed] });
+      await sendEmbedToModLogs(kickEmbedOptions, member.guild);
     }
   } catch (err) {
     return handleEventError({

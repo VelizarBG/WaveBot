@@ -7,33 +7,51 @@ import {
 } from 'discord.js';
 import { config } from '../config';
 
+export type EmbedAction =
+  'kick'
+  | 'ban'
+  | 'unban'
+  | 'timeout'
+  | 'remove timeout'
+  | 'create role'
+  | 'delete role'
+  | 'update role'
+  | 'give/take roles'
+  | 'delete message'
+
 interface ModerationDescription {
-  member: string;
+  member?: string;
   action: string;
   reason?: string;
   expiration?: string;
+  extra?: string;
 }
 
-interface ModerationEmbedOptions {
-  target: User;
+export interface ModerationEmbedOptions {
+  target?: User;
   executor: GuildMember;
-  action: 'kick' | 'ban' | 'unban';
+  action: EmbedAction;
   reason?: string | null;
   expiration?: number | null;
+  extra?: string | null;
+  isMemberModLog?: boolean;
 }
 
 export class ModerationEmbedBuilder extends EmbedBuilder {
   constructor(options: ModerationEmbedOptions) {
     super();
 
-    const { target, executor, action, reason, expiration } = options;
+    const { target, executor, action, reason, expiration, extra, isMemberModLog } = options;
 
     const descriptionObject: ModerationDescription = {
-      member: `**Member**: ${escapeMarkdown(target.username)} (${inlineCode(
-        target.id,
-      )})`,
       action: `**Action**: ${action}`,
     };
+
+    if (target) {
+      descriptionObject.member = `**Member**: ${escapeMarkdown(target.username)} (${inlineCode(
+        target.id,
+      )})`;
+    }
 
     if (reason) {
       descriptionObject.reason = `**Reason**: ${reason}`;
@@ -43,15 +61,30 @@ export class ModerationEmbedBuilder extends EmbedBuilder {
       descriptionObject.expiration = `**Expiration**: ${expiration}`;
     }
 
+    if (extra) {
+      descriptionObject.extra = extra;
+    }
+
     const description = Object.values(descriptionObject).join('\n');
 
     let color: number;
 
     switch (action) {
+      case 'remove timeout':
+      case 'create role':
+        color = config.embedColors.green;
+        break;
+      case 'update role':
+      case 'give/take roles':
+        color = config.embedColors.yellow;
+        break;
       case 'kick':
+      case 'timeout':
+      case 'delete message':
         color = config.embedColors.orange;
         break;
       case 'ban':
+      case 'delete role':
         color = config.embedColors.red;
         break;
       case 'unban':
@@ -72,7 +105,7 @@ export class ModerationEmbedBuilder extends EmbedBuilder {
     this.setDescription(description);
 
     this.setFooter({
-      text: 'Moderation Log',
+      text: `${isMemberModLog ? 'Member' : ''} Moderation Log`,
     });
 
     this.setTimestamp(Date.now());
