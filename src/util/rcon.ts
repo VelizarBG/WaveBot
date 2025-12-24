@@ -8,13 +8,13 @@ export const runRconCommand = async (
 ) => {
   const rconClient: RCON = new RCON();
 
-  await rconClient.connect(host, rconPort);
-  await rconClient.login(rconPassword);
-
-  const data = await rconClient.execute(command);
-
-  await rconClient.close();
-  return data;
+  return rconClient.connect(host, rconPort)
+    .then(() => rconClient.login(rconPassword))
+    .then(() => rconClient.execute(command))
+    .then((res) => {
+      rconClient.close();
+      return res;
+    });
 };
 
 export const getWhitelist = async (
