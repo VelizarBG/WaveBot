@@ -3,6 +3,30 @@ import { config } from '../config';
 import axios from "axios";
 import { ModerationEmbedBuilder, ModerationEmbedOptions } from "../classes/ModerationEmbedBuilder";
 import { getTextChannelFromID } from "./loggers";
+import { getForkedServices } from '../index';
+import { WhitelistTask } from '../role-whitelist/entities/whitelist-task.entity';
+import { OperatorTask } from '../role-whitelist/entities/operator-task.entity';
+
+export async function purgeScheduledTasks(predicate: (task: WhitelistTask | OperatorTask) => boolean): Promise<string[]> {
+  const db = await getForkedServices();
+
+  const [whitelistTasks, operatorTasks] = await Promise.all([db.whitelistTask.findAll(), db.operatorTask.findAll()]);
+
+  const purgedTasks = [];
+  for (const task of [...whitelistTasks, ...operatorTasks]) {
+    if (predicate(task)) {
+      purgedTasks.push(JSON.stringify({
+        id: task.id, ign: task.ign, operation: task.operation,
+        server: task.server.name, attempts: task.attempts
+      }));
+      db.em.remove(task);
+    }
+  }
+
+  await db.em.flush();
+
+  return purgedTasks;
+}
 
 export async function getUsers(executorId: string, targetId: string | null, guild: Guild): Promise<{
   executor: GuildMember | undefined,
