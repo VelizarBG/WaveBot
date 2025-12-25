@@ -4,6 +4,18 @@ import axios from "axios";
 import { ModerationEmbedBuilder, ModerationEmbedOptions } from "../classes/ModerationEmbedBuilder";
 import { getTextChannelFromID } from "./loggers";
 
+export async function getUsers(executorId: string, targetId: string | null, guild: Guild): Promise<{
+  executor: GuildMember | undefined,
+  target: GuildMember | undefined
+}> {
+  const users = await guild.members.fetch({
+    user: targetId ? [executorId, targetId] : executorId
+  });
+  const executor = users.get(executorId);
+  const target = targetId ? users.get(targetId) : undefined;
+  return { executor, target };
+}
+
 export async function sendEmbedToModLogs(options: ModerationEmbedOptions, guild: Guild) {
   options.isMemberModLog = false;
   const modLog = await getTextChannelFromID(guild, 'modLog');

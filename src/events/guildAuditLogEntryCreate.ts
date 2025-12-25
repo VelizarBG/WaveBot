@@ -1,16 +1,8 @@
 import { Event } from 'djs-handlers';
-import {
-  AuditLogEvent,
-  channelMention,
-  Collection,
-  GuildAuditLogsEntry,
-  GuildMember,
-  inlineCode,
-  roleMention
-} from "discord.js";
+import { AuditLogEvent, channelMention, GuildAuditLogsEntry, inlineCode, roleMention } from "discord.js";
 import { handleEventError } from "../util/loggers";
 import { EmbedAction, ModerationEmbedOptions } from "../classes/ModerationEmbedBuilder";
-import { getAsJsonIfObject, sendEmbedToModLogs } from "../util/helpers";
+import { getAsJsonIfObject, getUsers, sendEmbedToModLogs } from "../util/helpers";
 
 export default new Event('guildAuditLogEntryCreate', async (logEntry, guild) => {
   try {
@@ -24,11 +16,7 @@ export default new Event('guildAuditLogEntryCreate', async (logEntry, guild) => 
 
     switch (logEntry.action) {
       case AuditLogEvent.MemberUpdate: {
-        const users = (await guild.members.fetch({
-          user: targetId ? [executorId, targetId] : executorId
-        })) as Collection<string, GuildMember>;
-        const executor = users.get(executorId);
-        const target = targetId ? users.get(targetId) : undefined;
+        const { executor, target } = await getUsers(executorId, targetId, guild);
 
         if (!executor || !target) {
           break;
@@ -85,11 +73,7 @@ export default new Event('guildAuditLogEntryCreate', async (logEntry, guild) => 
         break;
       }
       case AuditLogEvent.MemberRoleUpdate: {
-        const users = (await guild.members.fetch({
-          user: targetId ? [executorId, targetId] : executorId
-        })) as Collection<string, GuildMember>;
-        const executor = users.get(executorId);
-        const target = targetId ? users.get(targetId) : undefined;
+        const { executor, target } = await getUsers(executorId, targetId, guild);
 
         if (!executor || !target) {
           break;
@@ -125,11 +109,7 @@ export default new Event('guildAuditLogEntryCreate', async (logEntry, guild) => 
           break;
         }
 
-        const users = (await guild.members.fetch({
-          user: targetId ? [executorId, targetId] : executorId
-        })) as Collection<string, GuildMember>;
-        const executor = users.get(executorId);
-        const target = targetId ? users.get(targetId) : undefined;
+        const { executor, target } = await getUsers(executorId, targetId, guild);
 
         if (!executor || !target) {
           break;
