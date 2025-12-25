@@ -87,11 +87,11 @@ export default new Event('guildAuditLogEntryCreate', async (logEntry, guild) => 
 
         let givenTakenStr: string = '';
         if (added) {
-          givenTakenStr = `**Given**: ${''.concat(...added)}`;
+          givenTakenStr = `**Given**: ${added.join(' ')}`;
         }
 
         if (removed) {
-          givenTakenStr = givenTakenStr.concat(`${added ? '\n' : ''}**Taken**: ${''.concat(...removed)}`);
+          givenTakenStr = givenTakenStr.concat(`${added ? '\n' : ''}**Taken**: ${removed.join(' ')}`);
         }
 
         embedOptions = {

@@ -17,9 +17,6 @@ export const runRconCommand = async (
     }).catch((error) => {
       console.log('=== RCON ERROR ===');
       console.log(error);
-      if (error instanceof Error) {
-        console.dir(error.stack);
-      }
       return '';
     });
 };

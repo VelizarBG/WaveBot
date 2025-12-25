@@ -19,9 +19,6 @@ import process from 'node:process';
 process.on('unhandledRejection', (error) => {
   console.log('=== UNHANDLED REJECTION ===');
   console.log(error);
-  if (error instanceof Error) {
-    console.dir(error.stack);
-  }
 });
 
 export const client = new ExtendedClient({
@@ -31,7 +28,7 @@ export const client = new ExtendedClient({
     GatewayIntentBits.GuildModeration,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildEmojisAndStickers,
+    GatewayIntentBits.GuildExpressions,
   ],
   partials: [Partials.GuildMember],
 });
