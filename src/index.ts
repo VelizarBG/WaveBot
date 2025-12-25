@@ -14,6 +14,13 @@ import { diffRolesOnInit } from "./role-whitelist/handlers/role-change-handler";
 import { OperatorTask } from "./role-whitelist/entities/operator-task.entity";
 import { handleError } from "./util/loggers";
 
+import process from 'node:process';
+
+process.on('unhandledRejection', (error) => {
+  console.log('=== UNHANDLED REJECTION ===');
+  console.log('Error: ' + error);
+});
+
 export const client = new ExtendedClient({
   intents: [
     GatewayIntentBits.Guilds,
