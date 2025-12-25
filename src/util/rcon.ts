@@ -14,6 +14,13 @@ export const runRconCommand = async (
     .then((res) => {
       rconClient.close();
       return res;
+    }).catch((error) => {
+      console.log('=== RCON ERROR ===');
+      console.log(error);
+      if (error instanceof Error) {
+        console.dir(error.stack);
+      }
+      return '';
     });
 };
 
