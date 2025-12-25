@@ -17,7 +17,8 @@ export async function purgeScheduledTasks(predicate: (task: WhitelistTask | Oper
     if (predicate(task)) {
       purgedTasks.push(JSON.stringify({
         id: task.id, ign: task.ign, operation: task.operation,
-        server: task.server.name, attempts: task.attempts
+        server: task.server.name, attempts: task.attempts,
+        type: task instanceof WhitelistTask ? 'whitelist' : 'operator'
       }));
       db.em.remove(task);
     }
