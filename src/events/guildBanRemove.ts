@@ -1,7 +1,8 @@
 import { AuditLogEvent } from 'discord.js';
 import { Event } from 'djs-handlers';
-import { ModerationEmbedBuilder } from '../classes/ModerationEmbedBuilder';
-import { getTextChannelFromID, handleEventError } from '../util/loggers';
+import { ModerationEmbedOptions } from '../classes/ModerationEmbedBuilder';
+import { handleEventError } from '../util/loggers';
+import { sendEmbedToModLogs } from '../util/helpers';
 
 export default new Event('guildBanRemove', async (guildUnban) => {
   try {
@@ -25,17 +26,16 @@ export default new Event('guildBanRemove', async (guildUnban) => {
     }
 
     const executingMember = await unban.guild.members.fetch(executor.id);
-    const modLog = await getTextChannelFromID(unban.guild, 'modLog');
 
     if (target.id === unban.user.id) {
-      const banEmbed = new ModerationEmbedBuilder({
+      const banEmbedOptions: ModerationEmbedOptions = {
         target: unban.user,
         executor: executingMember,
         action: 'unban',
         reason: reason,
-      });
+      };
 
-      modLog.send({ embeds: [banEmbed] });
+      await sendEmbedToModLogs(banEmbedOptions, unban.guild);
     } else {
       throw new Error(
         'The IDs of the target in the AuditLog and the target from the Event did not match.',
