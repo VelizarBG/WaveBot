@@ -17,8 +17,13 @@ export default new Command({
 
       const purgedTasks = await purgeScheduledTasks(task => task.attempts > 100);
 
-      const msg = 'The following tasks were purged:' + purgedTasks.join('\n');
-      console.log(msg);
+      let msg: string;
+      if (purgedTasks.length > 0) {
+        msg = 'The following tasks were purged:\n' + purgedTasks.join('\n');
+        console.log(msg);
+      } else {
+        msg = 'No tasks were purged.';
+      }
 
       return await interaction.editReply(msg);
     } catch (err) {
